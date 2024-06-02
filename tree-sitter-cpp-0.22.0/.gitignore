@@ -22,12 +22,6 @@ dist/
 *.whl
 
 # C artifacts
-*.a
-*.so
-*.so.*
-*.dylib
-*.dll
-*.pc
 
 # Example dirs
 /examples/*/

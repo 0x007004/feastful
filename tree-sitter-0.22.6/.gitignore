@@ -24,7 +24,6 @@ docs/assets/js/tree-sitter.js
 *.o
 *.obj
 *.exp
-*.lib
 *.wasm
 .swiftpm
 zig-*
