@@ -3,9 +3,11 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+
 extern "C" {
     #include <tree_sitter/api.h>
 }
+std::string code;
 
 extern "C" TSLanguage* tree_sitter_cpp();
 
@@ -43,7 +45,11 @@ void SplitExpress(TSNode node, const char* source_code) {
       // 打印左侧的表达式
       std::string s = node_text(left_node, source_code);
       if (s.find("&&") == std::string::npos && s.find("||") == std::string::npos) {
-        std::cout << s << std::endl;
+         std::cout << s << std::endl;
+      }
+      if (s == "FLAGS_test_del_code") {
+        auto length = ts_node_end_byte(left_node) - ts_node_start_byte(left_node);
+        code.replace(ts_node_start_byte(left_node), length,"true");
       }
       // 打印右侧的表达式
       std::cout << node_text(right_node, source_code) << std::endl;
@@ -60,24 +66,18 @@ void SplitExpress(TSNode node, const char* source_code) {
 
 void ProcessExpression(TSNode node, const char* source_code) {
   std::string l = node_text(node, source_code);
-  if (l.find("&&") == std::string::npos &&
-      l.find("||") == std::string::npos) {
-    std::cout << l << std::endl;
-  }
-
+  std::cout << l <<std::endl;
   SplitExpress(node, source_code);
 }
 
-void processIfStatement(TSNode node, const std::string& sourceCode) {
+/*void processIfStatement2(TSNode node, const std::string& sourceCode) {
   for (uint32_t i = 0; i < ts_node_child_count(node); ++i) {
     TSNode child = ts_node_child(node, i);
-
     auto start = ts_node_start_byte(child);
     auto end = ts_node_end_byte(child);
     std::string ifText = sourceCode.substr(start, end - start);
 
-    std::string childType = ts_node_type(child);
-    //std::cout <<childType <<std::endl;
+    const std::string& childType = ts_node_type(child);
     if (childType == "if_statement") {
       processIfStatement(child, sourceCode);
     }
@@ -90,9 +90,38 @@ void processIfStatement(TSNode node, const std::string& sourceCode) {
     }
 
     if (childType == "else_clause") {
+      std::cout <<"-----" << std::endl;
+      std::cout << node_text(child, sourceCode.c_str());
+      std::cout <<"-----" << std::endl;
       processIfStatement(child, sourceCode);
     }
   }
+}
+*/
+void processIfStatement(TSNode node, const std::string& sourceCode) {
+  int total_count = ts_node_child_count(node);
+  auto if_kw = ts_node_child(node, 0);
+  auto if_kw_n = ts_node_start_byte(if_kw);
+  std::cout << node_text(if_kw, sourceCode.c_str()) << std::endl;
+  auto if_condition = ts_node_child(node, 1);
+  // ProcessExpression(if_condition, sourceCode.c_str());
+
+  auto if_consequence = ts_node_child(node,2);
+  auto if_consequence_n = ts_node_end_byte(if_consequence);
+
+  if (total_count >= 4) {
+    auto else_clause = ts_node_child(node, 3);
+    int s = ts_node_start_byte(else_clause);
+    int end = s+4;
+    if_consequence_n = end;
+  }
+
+  std::cout <<sourceCode <<std::endl;
+  auto sourceCode_copy = sourceCode;
+  sourceCode_copy.replace(if_kw_n, if_consequence_n-if_kw_n,"\n");
+  std::cout <<sourceCode_copy <<std::endl;
+
+  std::cout <<"======================" << std::endl;
 }
 
 void findIfStatements(TSNode node, const std::string& sourceCode) {
@@ -103,10 +132,6 @@ void findIfStatements(TSNode node, const std::string& sourceCode) {
         std::string nodeType = ts_node_type(child);
 
         if (nodeType == "if_statement") {
-          // auto start = ts_node_start_byte(child);
-          // auto end = ts_node_end_byte(child);
-          // std::string ifText = sourceCode.substr(start, end - start);
-          // std::cout << "------" << ifText << std::endl;
           processIfStatement(child, sourceCode);
         } else {
           findIfStatements(child, sourceCode);
@@ -117,14 +142,15 @@ void findIfStatements(TSNode node, const std::string& sourceCode) {
 int main() {
     TSParser* parser = ts_parser_new();
     ts_parser_set_language(parser, tree_sitter_cpp());
-
-    std::string sourceCode = readFileIntoString("/home/liuyang/request_parser.cc");
+    std::string sourceCode = readFileIntoString("/home/liuyang/source.cc");
+    code = sourceCode;
     TSTree* tree = ts_parser_parse_string(parser, nullptr, sourceCode.c_str(), sourceCode.size());
 
     TSNode root_node = ts_tree_root_node(tree);
 
     findIfStatements(root_node, sourceCode);
 
+    //std::cout <<code <<std::endl;b
     ts_tree_delete(tree);
     ts_parser_delete(parser);
 

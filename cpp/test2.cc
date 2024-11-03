@@ -89,10 +89,7 @@ void findIfStatements(TSNode node, const std::string& sourceCode) {
             auto start = ts_node_start_byte(child);
             auto end = ts_node_end_byte(child);
             std::string ifText = sourceCode.substr(start, end - start);
-        //    std::cout << "Found an if statement: " << ifText << std::endl;
 
-            // 打印if条件
-            //printIfCondition(child, sourceCode);
 						processIfStatement(child, sourceCode);
         } else {
           findIfStatements(child, sourceCode);
