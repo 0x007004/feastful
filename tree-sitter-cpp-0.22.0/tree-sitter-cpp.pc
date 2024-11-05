@@ -1,0 +1,11 @@
+prefix=/usr/local
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: tree-sitter-cpp
+Description: C++ grammar for tree-sitter
+URL: https://github.com/0x007004/feastful
+Version: 0.22.0
+Requires: 
+Libs: -L${libdir}  -ltree-sitter-cpp
+Cflags: -I${includedir}

@@ -183,7 +183,7 @@ void findIfStatements(TSNode node, const std::string& sourceCode) {
 int main() {
     TSParser* parser = ts_parser_new();
     ts_parser_set_language(parser, tree_sitter_cpp());
-    std::string sourceCode = readFileIntoString("/home/liuyang/source.cc");
+    std::string sourceCode = readFileIntoString("./source.cc");
     code = sourceCode;
     TSTree* tree = ts_parser_parse_string(parser, nullptr, sourceCode.c_str(), sourceCode.size());
 
