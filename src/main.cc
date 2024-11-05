@@ -5,37 +5,11 @@
 #include <string>
 
 extern "C" {
-    #include "tree_sitter/api.h"
+    #include <tree_sitter/api.h>
 }
 std::string code;
 
 extern "C" TSLanguage* tree_sitter_cpp();
-
-std::string readFileIntoString(const std::string& path) {
-    std::ifstream input(path);
-    std::stringstream buffer;
-    buffer << input.rdbuf();
-    return buffer.str();
-}
-
-std::string node_text(TSNode node, const char* source_code) {
-//  auto start = ts_node_start_byte(child);
-//  auto end = ts_node_end_byte(child);
-//  std::string ifText = sourceCode.substr(start, end - start);
-
-  auto length = ts_node_end_byte(node) - ts_node_start_byte(node);
-  return std::string(source_code + ts_node_start_byte(node), length);
-}
-
-
-
-std::string Node2Txt(TSNode node, const std::string& sourceCode) {
-  auto start = ts_node_start_byte(node);
-  auto end = ts_node_end_byte(node);
-  return sourceCode.substr(start, end - start);
-}
-
-const std::string NOT_OPERATOR_SYMBOL = "!";
 
 void SplitExpress(TSNode node, const char* source_code) {
   // 获取当前节点的类型
@@ -191,7 +165,6 @@ int main() {
 
     findIfStatements(root_node, sourceCode);
 
-    //std::cout <<code <<std::endl;b
     ts_tree_delete(tree);
     ts_parser_delete(parser);
 
